@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.tlaabs.timetableview.Schedule;
 import com.github.tlaabs.timetableview.Time;
@@ -32,6 +33,7 @@ import java.util.Calendar;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import dmax.dialog.SpotsDialog;
 
 public class TimeTableFragment extends Fragment {
 
@@ -46,12 +48,12 @@ public class TimeTableFragment extends Fragment {
         // Required empty public constructor
     }
 
-    
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       
+
     }
 
     @Override
@@ -63,7 +65,7 @@ public class TimeTableFragment extends Fragment {
 
         init();
 
-        
+
         return  view;
     }
 
@@ -71,23 +73,21 @@ public class TimeTableFragment extends Fragment {
         Calendar calendar = Calendar.getInstance();
         int header = calendar.get(Calendar.DAY_OF_WEEK);
 
-
         timetable.setHeaderHighlight(header);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAddScheduleDialog();
-            }
-        });
-
-
+        fab.setOnClickListener(v -> showAddScheduleDialog());
 
     }
 
     private void loadUserSchedule(String data) {
         if( data == null) return;
         timetable.load(data);
+        timetable.setOnStickerSelectEventListener(new TimetableView.OnStickerSelectedListener() {
+            @Override
+            public void OnStickerSelected(int idx, ArrayList<Schedule> schedules) {
+                Toast.makeText(getContext(), "selected", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void showAddScheduleDialog() {
@@ -108,72 +108,69 @@ public class TimeTableFragment extends Fragment {
         Spinner day_spinner = add_subject.findViewById(R.id.day_spinner);
         Button btn_save = add_subject.findViewById(R.id.btn_save);
 
-        if (!TextUtils.isEmpty(edt_subject.getText().toString()) && !TextUtils.isEmpty(edt_lec.toString())){
-
-            ArrayList<Schedule> schedules = new ArrayList<>();
-            Schedule schedule = new Schedule();
-            schedule.setProfessorName(edt_lec.getText().toString());
-            schedule.setClassPlace(edt_class.getText().toString());
-            schedule.setClassTitle(edt_subject.getText().toString());
-
-            day_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    schedule.setDay(position);
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });
-
-            startTime.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    TimePickerDialog timeDialog = new TimePickerDialog(getContext(),listener,schedule.getStartTime().getHour() ,schedule.getStartTime().getMinute(),android.text.format.DateFormat.is24HourFormat(getContext()));
-                    timeDialog.show();
-
-                }
-                private   TimePickerDialog.OnTimeSetListener listener = (view, hourOfDay, minute) -> {
-                    startTime.setText(hourOfDay+ ":" + minute);
-                    schedule.setStartTime(new Time(hourOfDay,minute));
-
-                };
-            });
-
-            endTime.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    TimePickerDialog timeDialog = new TimePickerDialog(getContext(),listener,schedule.getEndTime().getHour(),schedule.getEndTime().getMinute(),android.text.format.DateFormat.is24HourFormat(getContext()));
-                    timeDialog.show();
-
-                }
-                private   TimePickerDialog.OnTimeSetListener listener = (view, hourOfDay, minute) -> {
-                    endTime.setText(hourOfDay+ ":" + minute);
-                    schedule.setEndTime(new Time(hourOfDay,minute));
 
 
-                };
-            });
+        ArrayList<Schedule> schedules = new ArrayList<>();
+        Schedule schedule = new Schedule();
+        schedule.setProfessorName(edt_lec.getText().toString());
+        schedule.setClassPlace(edt_class.getText().toString());
+        schedule.setClassTitle(edt_subject.getText().toString());
 
+        day_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                schedule.setDay(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        startTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(), "Clicked", Toast.LENGTH_SHORT).show();
+                TimePickerDialog timeDialog = new TimePickerDialog(getContext(), listener, schedule.getStartTime().getHour(), schedule.getStartTime().getMinute(), android.text.format.DateFormat.is24HourFormat(getContext()));
+                timeDialog.show();
+
+            }
+
+            private TimePickerDialog.OnTimeSetListener listener = (view, hourOfDay, minute) -> {
+                startTime.setText(hourOfDay + ":" + minute);
+                schedule.setStartTime(new Time(hourOfDay, minute));
+
+            };
+        });
+
+        endTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TimePickerDialog timeDialog = new TimePickerDialog(getContext(), listener, schedule.getEndTime().getHour(), schedule.getEndTime().getMinute(), android.text.format.DateFormat.is24HourFormat(getContext()));
+                timeDialog.show();
+
+            }
+
+            private TimePickerDialog.OnTimeSetListener listener = (view, hourOfDay, minute) -> {
+                endTime.setText(hourOfDay + ":" + minute);
+                schedule.setEndTime(new Time(hourOfDay, minute));
+
+
+            };
+        });
+
+
+        btn_save.setOnClickListener(v -> {
             schedules.add(schedule);
             timetable.add(schedules);
 
+            String data = timetable.createSaveData();
+            loadUserSchedule(data);
+            dialog.dismiss();
 
-            btn_save.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String data =   timetable.createSaveData();
-                    loadUserSchedule(data);
-                    dialog.dismiss();
-                }
-            });
-        }
-        else {
-            dialog.setCanceledOnTouchOutside(showWarningDialog());
-        }
 
+        });
 
 
         dialog.setView(add_subject);
@@ -181,10 +178,7 @@ public class TimeTableFragment extends Fragment {
 
     }
 
-    private boolean showWarningDialog() {
 
-        return false;
-    }
 
     @Override
     public void onResume() {
