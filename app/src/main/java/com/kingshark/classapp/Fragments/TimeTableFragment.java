@@ -1,7 +1,6 @@
 package com.kingshark.classapp.Fragments;
 
 import android.app.TimePickerDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -9,7 +8,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,14 +17,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.github.tlaabs.timetableview.Schedule;
 import com.github.tlaabs.timetableview.Time;
 import com.github.tlaabs.timetableview.TimetableView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.jaredrummler.materialspinner.MaterialSpinner;
+import com.google.firebase.firestore.DocumentReference;
 import com.kingshark.classapp.R;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,7 +36,6 @@ import java.util.Calendar;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import dmax.dialog.SpotsDialog;
 
 public class TimeTableFragment extends Fragment {
 
@@ -43,6 +45,8 @@ public class TimeTableFragment extends Fragment {
     TimetableView timetable;
     @BindView(R.id.add_fab)
     FloatingActionButton fab;
+
+    DocumentReference scheduleRef;
 
     public TimeTableFragment() {
         // Required empty public constructor
@@ -73,21 +77,68 @@ public class TimeTableFragment extends Fragment {
         Calendar calendar = Calendar.getInstance();
         int header = calendar.get(Calendar.DAY_OF_WEEK);
 
-        timetable.setHeaderHighlight(header);
+        timetable.setHeaderHighlight(header-1);
+
 
         fab.setOnClickListener(v -> showAddScheduleDialog());
 
     }
 
     private void loadUserSchedule(String data) {
-        if( data == null) return;
+        timetable.removeAll();
+        if(data == null) return;
         timetable.load(data);
-        timetable.setOnStickerSelectEventListener(new TimetableView.OnStickerSelectedListener() {
+        timetable.setOnStickerSelectEventListener((idx, schedules) -> {
+            //Toast.makeText(getContext(), "selected", Toast.LENGTH_SHORT).show();
+            showUpdateDialog(schedules);
+        });
+    }
+
+    private void showUpdateDialog(ArrayList<Schedule> schedules) {
+
+        AlertDialog dialog = new AlertDialog.Builder(getContext()).create();
+        dialog.setTitle("UPDATE SUBJECT");
+        dialog.setCanceledOnTouchOutside(false);
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        View edit_subject = inflater.inflate(R.layout.add_event_layout,null);
+
+
+        EditText edt_subject = edit_subject.findViewById(R.id.edt_subject);
+        EditText edt_class = edit_subject.findViewById(R.id.edt_classLocation);
+        EditText edt_lec = edit_subject.findViewById(R.id.edt_Lecturer);
+        TextView startTime = edit_subject.findViewById(R.id.start_time);
+        TextView endTime = edit_subject.findViewById(R.id.end_time);
+        Spinner day_spinner = edit_subject.findViewById(R.id.day_spinner);
+        Button btn_save = edit_subject.findViewById(R.id.btn_save);
+
+
+        Schedule editSchedule = new Schedule();
+        editSchedule = schedules.get(0);
+        edt_subject.setText(editSchedule.getClassTitle());
+        edt_lec.setText(editSchedule.getProfessorName());
+        edt_class.setText(editSchedule.getClassPlace());
+        edt_subject.setText(editSchedule.getClassTitle());
+        day_spinner.setSelection(editSchedule.getDay());
+
+
+
+        btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void OnStickerSelected(int idx, ArrayList<Schedule> schedules) {
-                Toast.makeText(getContext(), "selected", Toast.LENGTH_SHORT).show();
+            public void onClick(View v) {
+
+
+
             }
         });
+
+
+
+        dialog.setView(edit_subject);
+        dialog.show();
+
+
+
     }
 
     private void showAddScheduleDialog() {
@@ -111,10 +162,7 @@ public class TimeTableFragment extends Fragment {
 
 
         ArrayList<Schedule> schedules = new ArrayList<>();
-        Schedule schedule = new Schedule();
-        schedule.setProfessorName(edt_lec.getText().toString());
-        schedule.setClassPlace(edt_class.getText().toString());
-        schedule.setClassTitle(edt_subject.getText().toString());
+        final Schedule schedule = new Schedule();
 
         day_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -161,12 +209,45 @@ public class TimeTableFragment extends Fragment {
         });
 
 
+
         btn_save.setOnClickListener(v -> {
+            schedule.setClassTitle(edt_subject.getText().toString());
+            schedule.setClassPlace(edt_class.getText().toString());
+            schedule.setProfessorName(edt_lec.getText().toString());
+
             schedules.add(schedule);
             timetable.add(schedules);
 
             String data = timetable.createSaveData();
             loadUserSchedule(data);
+
+            JSONObject jsonObject = null;
+            try {
+                jsonObject = new JSONObject(data);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            Log.d("ClassData", jsonObject.toString());
+
+
+//            scheduleRef = FirebaseFirestore.getInstance().collection("Schedule").document();
+//              JSONObject jsonObject = new JSONObject(data);
+//            scheduleRef.add(jsonObject)
+//                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<DocumentReference> task) {
+//                            if (task.isSuccessful())
+//                                loadUserSchedule(data);
+//                        }
+//                    }).addOnFailureListener(new OnFailureListener() {
+//                @Override
+//                public void onFailure(@NonNull Exception e) {
+//                    Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+//                }
+//            });
+
+
             dialog.dismiss();
 
 

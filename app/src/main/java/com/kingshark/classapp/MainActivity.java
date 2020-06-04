@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.kingshark.classapp.Fragments.NotesFragment;
 import com.kingshark.classapp.Fragments.TimeTableFragment;
 
 import butterknife.BindView;
@@ -34,10 +35,13 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 if (item.getItemId() == R.id.action_home)
                     fragment = new TimeTableFragment();
+                else if (item.getItemId() == R.id.action_notes)
+                    fragment =  new NotesFragment();
                 else if (item.getItemId() == R.id.action_todo)
-                    Toast.makeText(MainActivity.this, "Coming Soon", Toast.LENGTH_SHORT).show();
-                else if (item.getItemId() == R.id.action_Search)
-                    Toast.makeText(MainActivity.this, "Coming Soon", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Todo's ", Toast.LENGTH_SHORT).show();
+                    //startActivity(new Intent(MainActivity.this, NotesActivity.class));
+                else if (item.getItemId() == R.id.action_dash)
+                    Toast.makeText(MainActivity.this, "Dashboard", Toast.LENGTH_SHORT).show();
 
                 return loadFragment(fragment);
             }
