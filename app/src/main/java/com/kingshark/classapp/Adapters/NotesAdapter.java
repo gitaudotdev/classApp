@@ -10,12 +10,17 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.kingshark.classapp.Fragments.NoteDetailsFragment;
 import com.kingshark.classapp.Interface.IRecyclerViewListener;
+import com.kingshark.classapp.Models.EventBus.NotesEvent;
 import com.kingshark.classapp.Models.Notes;
 import com.kingshark.classapp.R;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +33,20 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NotesViewHol
 
     Context context;
     List<Notes> notesList;
+    Notes notes;
+    NoteDetailsFragment fragment;
+
+
+    public NotesAdapter(Context context, List<Notes> notesList) {
+        this.context = context;
+        this.notesList = notesList;
+    }
+
+    public NotesAdapter(Context context, List<Notes> notesList, NoteDetailsFragment fragment) {
+        this.context = context;
+        this.notesList = notesList;
+        this.fragment = fragment;
+    }
 
     @NonNull
     @Override
@@ -44,8 +63,13 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NotesViewHol
         holder.tv_title.setText(notesList.get(position).getTitle());
         holder.noteCard.setCardBackgroundColor(context.getResources().getColor(getRandomColor(),null));
 
+        holder.setListener((view, position1) -> {
+            EventBus.getDefault().postSticky(new NotesEvent(notes));
+            AppCompatActivity activity = (AppCompatActivity) view.getContext();
+            fragment = new NoteDetailsFragment();
+            activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
 
-        holder.setListener((view, position1) -> Toast.makeText(context, "Clicked", Toast.LENGTH_SHORT).show());
+        });
 
     }
 

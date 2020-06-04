@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -82,19 +83,21 @@ public class TimeTableFragment extends Fragment {
 
         fab.setOnClickListener(v -> showAddScheduleDialog());
 
+        timetable.setOnStickerSelectEventListener((idx, schedules) -> {
+            //Toast.makeText(getContext(), "selected", Toast.LENGTH_SHORT).show();
+            Schedule editSchedule = new Schedule();
+            showUpdateDialog(idx,schedules,editSchedule);
+        });
+
     }
 
     private void loadUserSchedule(String data) {
         timetable.removeAll();
         if(data == null) return;
         timetable.load(data);
-        timetable.setOnStickerSelectEventListener((idx, schedules) -> {
-            //Toast.makeText(getContext(), "selected", Toast.LENGTH_SHORT).show();
-            showUpdateDialog(schedules);
-        });
     }
 
-    private void showUpdateDialog(ArrayList<Schedule> schedules) {
+    private void showUpdateDialog(int idx, ArrayList<Schedule> schedules, Schedule editSchedule) {
 
         AlertDialog dialog = new AlertDialog.Builder(getContext()).create();
         dialog.setTitle("UPDATE SUBJECT");
@@ -113,8 +116,38 @@ public class TimeTableFragment extends Fragment {
         Button btn_save = edit_subject.findViewById(R.id.btn_save);
 
 
-        Schedule editSchedule = new Schedule();
+
+        Schedule finalEditSchedule = editSchedule;
         editSchedule = schedules.get(0);
+
+        startTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TimePickerDialog dialog = new TimePickerDialog(getContext(),listener,finalEditSchedule.getStartTime().getHour(), finalEditSchedule.getStartTime().getMinute(), false);
+                dialog.show();
+            }
+
+            private TimePickerDialog.OnTimeSetListener listener = (view, hourOfDay, minute) -> {
+                startTime.setText(hourOfDay + ":" + minute);
+                finalEditSchedule.getStartTime().setHour(hourOfDay);
+                finalEditSchedule.getStartTime().setMinute(minute);
+            };
+        });
+
+        endTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TimePickerDialog dialog = new TimePickerDialog(getContext(),listener,finalEditSchedule.getEndTime().getHour(), finalEditSchedule.getEndTime().getMinute(), false);
+                dialog.show();
+            }
+
+            private TimePickerDialog.OnTimeSetListener listener = (view, hourOfDay, minute) -> {
+                finalEditSchedule.getEndTime().setHour(hourOfDay);
+                finalEditSchedule.getEndTime().setMinute(minute);
+                endTime.setText(hourOfDay + ":" + minute);
+            };
+        });
+
         edt_subject.setText(editSchedule.getClassTitle());
         edt_lec.setText(editSchedule.getProfessorName());
         edt_class.setText(editSchedule.getClassPlace());
@@ -122,13 +155,15 @@ public class TimeTableFragment extends Fragment {
         day_spinner.setSelection(editSchedule.getDay());
 
 
-
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                schedules.add(finalEditSchedule);
+                timetable.remove(idx);
+                timetable.add(schedules);
 
-
+                dialog.dismiss();
             }
         });
 
