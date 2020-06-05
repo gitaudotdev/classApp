@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
@@ -19,8 +21,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.kingshark.classapp.Adapters.NotesAdapter;
 import com.kingshark.classapp.Common.SpaceItemDecoration;
+import com.kingshark.classapp.Models.Notes;
 import com.kingshark.classapp.R;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,6 +41,10 @@ public class NotesFragment extends Fragment {
     RecyclerView notes_recycler;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.note_fab)
+    FloatingActionButton note_fab;
+    NotesAdapter adapter;
+    List<Notes> notes;
 
 
 
@@ -82,6 +93,17 @@ public class NotesFragment extends Fragment {
             }
         });
 
+        note_fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Fragment fragment = new AddNotesFragment();
+                FragmentTransaction ft = getFragmentManager().beginTransaction().replace(R.id.fragment_container,fragment)
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).addToBackStack(null);
+                ft.commit();
+
+            }
+        });
+
     }
 
     private void init() {
@@ -91,10 +113,11 @@ public class NotesFragment extends Fragment {
         notes_recycler.setLayoutManager(gridLayoutManager);
         notes_recycler.addItemDecoration(new SpaceItemDecoration(2));
 
-        loadNotes();
+        //loadNotes();
     }
 
     private void loadNotes() {
-
+        adapter = new NotesAdapter(getContext(),notes);
+        notes_recycler.setAdapter(adapter);
     }
 }

@@ -42,8 +42,12 @@ public class NoteDetailsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static NoteDetailsFragment newInstance() {
-        return new NoteDetailsFragment();
+    static NoteDetailsFragment instance;
+
+    public static NoteDetailsFragment getInstance(){
+        if (instance == null)
+            instance = new NoteDetailsFragment();
+        return instance;
     }
 
 

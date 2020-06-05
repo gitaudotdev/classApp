@@ -75,7 +75,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:src="@drawable/ic_baseline_add_24"
+        android:src="@drawable/ic_baseline_save_24"
         android:background="@android:color/white"
         android:layout_margin="16dp"
         />

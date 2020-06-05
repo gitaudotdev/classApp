@@ -25,8 +25,8 @@ public class NotesActivity extends AppCompatActivity {
     Toolbar toolbar;
     @BindView(R.id.notes_recycler)
     RecyclerView notes_recycler;
-    @BindView(R.id.notes_fab)
-    FloatingActionButton notes_fab;
+//    @BindView(R.id.notes_fab)
+//    FloatingActionButton notes_fab;
     @BindView(R.id.img_sync)
     ImageView img_sync;
     @BindView(R.id.img_delete)
@@ -39,9 +39,6 @@ public class NotesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notes);
         setSupportActionBar(toolbar);
-
-
-
 
 
         initView();
