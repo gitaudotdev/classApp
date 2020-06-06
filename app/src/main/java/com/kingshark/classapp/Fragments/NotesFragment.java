@@ -113,11 +113,12 @@ public class NotesFragment extends Fragment {
         notes_recycler.setLayoutManager(gridLayoutManager);
         notes_recycler.addItemDecoration(new SpaceItemDecoration(2));
 
-        //loadNotes();
+        loadNotes();
     }
 
     private void loadNotes() {
-        adapter = new NotesAdapter(getContext(),notes);
+        if(adapter != null)
+            adapter = new NotesAdapter(getContext(),notes);
         notes_recycler.setAdapter(adapter);
     }
 }
