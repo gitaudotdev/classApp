@@ -38,7 +38,7 @@
                     android:textColor="@android:color/white"
                     android:textSize="20sp"
                     android:inputType="text"
-                    android:backgroundTint="@color/fui_transparent"
+                    android:backgroundTint="@android:color/transparent"
                     android:hint="@android:string/untitled"
                     />
 
@@ -65,7 +65,7 @@
             android:gravity="start|top"
             android:textColor="@android:color/black"
             android:hint="Write your Notes here"
-            android:backgroundTint="@color/fui_transparent"
+            android:backgroundTint="@android:color/transparent"
             android:ems="10"
             />
 
